@@ -1,0 +1,333 @@
+{
+  "info": {
+    "name": "Moirei",
+    "type": "cui2",
+    "author": [ "Yuji Suehiro" ],
+    "copyright": "Yuji Suehiro",
+    "version": "1.0.0",
+    "develop": "2021/03/13",
+    "license": "MIT License"
+  },
+  "command": {
+    "downloadRef": {
+      "require": [ "refname" ],
+      "description": "Download reference dataset."
+    },
+    "convertGenome": {
+      "require": [
+        "input",
+        "outdir",
+        "file-name"
+      ],
+      "option": [
+        "source",
+        "refver",
+        "species",
+        "rename",
+        "attribute-file",
+        "target-lg"
+      ],
+      "description": "Compress genome sequence (4 bases => 1 byte)."
+    },
+    "referenceSummary": {
+      "require": [
+        "reference",
+        "annotdb"
+      ],
+      "option": [
+        "output"
+      ],
+      "description": "Show summary information of reference genome."
+    },
+    "extractGenome": {
+      "require": [
+        "_args_",
+        "reference"
+      ],
+      "option": [
+        "output",
+        "oformat",
+        "annotation"
+      ],
+      "description": "Extract genomic sequence of the specified region."
+    },
+    "countGCRatio": {
+      "require": [
+        "reference",
+        "bin"
+      ],
+      "option": [
+        "output"
+      ],
+      "description": "Count GC of each bin."
+    },
+
+    "refSearch": {
+      "require": [ "reference" ],
+      "select": [ "input", "output", "_args_" ],
+      "description": "Local search."
+    },
+
+    "geneSeq": {
+      "require": [ "_args_", "annotdb", "reference" ],
+      "option": [ "output", "oformat" ],
+      "description": "Extract gene sequence."
+    },
+    "transcriptSeq": {
+      "require": [ "_args_", "annotdb", "reference" ],
+      "option": [ "output", "oformat", "splicing", "cds-only" ],
+      "description": "Extract transcript sequence."
+    },
+    "aaSeq": {
+      "require": [ "_args_", "annotdb", "reference" ],
+      "option": [ "output", "codon", "mt-codon" ],
+      "description": "Get translated sequence."
+    },
+
+    "gffSummary": {
+      "require": [ "_args_" ],
+      "description": "Summary of sources and attribute keys in a GFF file."
+    },
+    "makeAnnotDB": {
+      "require": [
+        "reference",
+        "gff",
+        "output",
+        "plugin",
+        "attribute"
+      ],
+      "option": [
+        "source",
+        "dbver",
+        "species"
+      ],
+      "description": "Construct local DB for annotation"
+    },
+    "bioAnnotation": {
+      "require": [ "from", "to", "annotdb" ],
+      "option": [ "output" ],
+      "select": [ "input", "_args_" ],
+      "description": "Annotation for specific sites"
+    },
+
+
+    "makeOrthoDB": {
+      "require": [ "list", "source", "output" ],
+      "option": [ "dbversion" ],
+      "description": "Construct local DB for geneorthology."
+    },
+    "motifSearch": {
+      "require": [ "_args_", "annotdb" ],
+      "option": [ "output" ],
+      "description": ""
+    },
+    "variantSearch": {
+      "require": [ "_args_", "reference" ],
+      "option": [ "output", "annotdb", "recall", "hetero-detect" ],
+      "description": "Search variants from Sangar sequence data"
+    },
+    "variantFilter": {
+      "require": [
+        "_args_",
+        "reference",
+        "param"
+      ],
+      "option": [
+        "annotdb",
+        "target",
+        "output",
+        "oformat",
+        "plugin-filter",
+        "plugin-io",
+        "novel-only",
+        "cds-only",
+        "homo-only",
+        "min-qual",
+        "min-freq"
+      ],
+      "description": "Filter variants"
+    },
+    "makeDiseaseDB": {
+      "require": [ "list", "source", "output" ],
+      "option": [ "dbversion" ],
+      "description": "Make disease database."
+    },
+    "diseaseRelatedGene": {
+      "require": [ "db", "_args_" ],
+      "option": [ "species", "search-ortho", "output" ],
+      "description": "Search disease related genes."
+    },
+    "templateParam": {
+      "require": [
+        "_args_",
+        "outdir"
+      ],
+      "description": "Export template parameter file(.json)."
+    }
+  },
+  "option": {
+    "_args_": {
+      "brief": "args...",
+      "description": "Arguments for each command."
+    },
+    "workspace": {
+      "brief": "path",
+      "default": "~",
+      "description": "Workspace directory. It requires more than 2-3 GB depending on the number of downloaded reference datasets."
+    },
+    "refname": {
+      "brief": "name",
+      "description": ""
+    },
+    "reference": {
+      "short": "r",
+      "brief": "file",
+      "description": "Path to compressed reference sequence file."
+    },
+    "annotation": {
+      "short": "a",
+      "brief": "file(.db)",
+      "description": "Path to database for annotations."
+    },
+    "param": {
+      "short": "p",
+      "brief": "file",
+      "description": "Parameter file (.json)."
+    },
+    "target": {
+      "brief": "file",
+      "description": "Target reference region (.bed)."
+    },
+    "input": {
+      "short": "i",
+      "brief": "input(s)",
+      "description": "Input file(s) or directory."
+    },
+    "output": {
+      "short": "o",
+      "brief": "output(s)",
+      "description": "Output file(s)."
+    },
+    "outdir": {
+      "short": "O",
+      "brief": "output directory",
+      "description": "Output directory."
+    },
+    "file-name": {
+      "brief": "name",
+      "description": "file name to import / export"
+    },
+    "oformat": {
+      "short": "f",
+      "brief": "format",
+      "default": "auto",
+      "description": "Data format to export."
+    },
+    "url": {
+      "short": "u",
+      "brief": "URL",
+      "description": "Address to download or call API"
+    },
+    "decompress": {
+      "type": "bool",
+      "default": false,
+      "description": "Option to decompress file."
+    },
+    "refver": {
+      "brief": "version",
+      "description": "Reference version (i.e. GRCh38.XXXX)."
+    },
+    "dbver": {
+      "brief": "version",
+      "description": "Database version (i.e. GRCh38.XXXX)."
+    },
+    "source": {
+      "brief": "name",
+      "description": "Name of data sorce."
+    },
+    "list": {
+      "brief": "file",
+      "description": "Dataset file."
+    },
+    "species": {
+      "brief": "name",
+      "description": "Species name."
+    },
+    "plugin": {
+      "brief": "name",
+      "description": "Native plugin (dynamic library)."
+    },
+    "supplementary": {
+      "brief": "additional",
+      "description": "Additional information."
+    },
+    "rename": {
+      "type": "bool",
+      "default": false,
+      "description": "Rename the sequences (i.e. RefSeq genome : accession numbers => common names such as 1,2,3...X,Y)."
+    },
+    "attribute": {
+      "brief": "info",
+      "description": "Attribute data."
+    },
+
+    "attribute-file": {
+      "brief": "file",
+      "description": "Attribute information."
+    },
+    "gff": {
+      "brief": "file",
+      "description": "GFF annotation file."
+    },
+    "gene-list": {
+      "brief": "file",
+      "description": "Gene list file."
+    },
+    "target-lg": {
+      "brief": "str",
+      "default": "ALL",
+      "description": "Target linkage group(s). [CHR: CHRomosomes; M: Mitochondrial genome; PLT: Plastid; PLM: Plasmid; ALL: All seqences (default); IF need to combinate, join by '+(0x)' such as CHR+M meaning CHRomosome and Mitochondria ]"
+    },
+    "bin": {
+      "brief": "size",
+      "type": "int",
+      "description": "Binning size"
+    },
+    "from": {
+      "brief": "data-type",
+      "description": ""
+    },
+    "to": {
+      "brief": "data-type",
+      "description": ""
+    },
+    "plugin-filter": {
+      "brief": "plugin",
+      "description": "Plugin for customized filter."
+    },
+    "plugin-io": {
+      "brief": "plugin",
+      "description": "Plugin for customized I/O."
+    },
+    "novel-only": {
+      "type": "bool",
+      "description": "Filter only novel variant."
+    },
+    "cds-only": {
+      "type": "bool",
+      "description": "Filter only CDS variant."
+    },
+    "homo-only": {
+      "type": "bool",
+      "description": "Filter only homozygous variant."
+    },
+    "min-qual": {
+      "brief": "value",
+      "description": "Minimum quality value for filtering."
+    },
+    "min-freq": {
+      "brief": "value",
+      "description": "Minimum frequency value for filtering."
+    }
+  }
+}
