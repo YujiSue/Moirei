@@ -9,37 +9,135 @@
     "license": "MIT License"
   },
   "command": {
-    "downloadRef": {
-      "require": [ "refname" ],
-      "description": "Download reference dataset."
-    },
-    "convertGenome": {
+    "ConvertGenome": {
       "require": [
         "input",
-        "outdir",
-        "file-name"
+        "output"
       ],
       "option": [
         "source",
-        "refver",
+        "ver",
         "species",
         "rename",
-        "attribute-file",
-        "target-lg"
+        "attribute",
+        "lg"
       ],
       "description": "Compress genome sequence (4 bases => 1 byte)."
     },
-    "referenceSummary": {
+    "MakeAnnotDB": {
+      "require": [
+        "reference",
+        "gff",
+        "output",
+        "plugin",
+        "attribute"
+      ],
+      "option": [
+        "source",
+        "ver",
+        "species"
+      ],
+      "description": "Construct local database for annotation."
+    },
+    "MakeOrthoDB": {
+      "require": [
+        "input",
+        "output"
+      ],
+      "description": "Construct a local database of orthologue genes."
+    },
+    "MakeDiseaseDB": {
+      "require": [
+        "input",
+        "output"
+      ],
+      "description": "Make a local database of human disease and related genes."
+    },
+
+    "RefInfo": {
       "require": [
         "reference",
         "annotdb"
       ],
       "option": [
-        "output"
+        "output",
+        "oformat"
       ],
-      "description": "Show summary information of reference genome."
+      "description": "Display reference summary."
     },
-    "extractGenome": {
+    "GffSummary": {
+      "require": [ "_args_" ],
+      "description": "Summary of sources and attribute keys in a GFF file."
+    },
+
+    "GeneInfo": {
+      "require": [
+        "_args_",
+        "annotdb"
+      ],
+      "option": [
+        "output",
+        "oformat",
+        "search-description",
+        "search-synonym",
+        "search-xref",
+        "transcript"
+      ],
+      "description": "Display gene information."
+    },
+    "OrthoGene": {
+      "require": [
+        "_args_",
+        "db",
+        "taxon"
+      ],
+      "option": [
+        "output",
+        "oformat"
+      ],
+      "description": "Display orthologue genes of the query."
+    },
+    "DiseaseRelated": {
+      "require": [
+        "_args_",
+        "db",
+        "taxon"
+      ],
+      "option": [
+        "output",
+        "oformat",
+        "search-orthologue"
+      ],
+      "description": "Display genes related to the query disease."
+    },
+    "RelatedDisease": {
+      "require": [
+        "_args_",
+        "db"
+      ],
+      "option": [
+        "annotdb",
+        "query-type",
+        "output",
+        "oformat",
+        "search-orthologue"
+      ],
+      "description": "Display genes related to the query disease."
+    },
+
+    "PrimerInfo": {
+      "require": [
+        "_args_"
+      ],
+      "option": [
+        "reference",
+        "output",
+        "oformat"
+      ],
+      "description": "Display primer property (i.e. GC%, melting temp., etc...)."
+    },
+
+    "GenomeSeq": {
       "require": [
         "_args_",
         "reference"
@@ -47,10 +145,106 @@
       "option": [
         "output",
         "oformat",
-        "annotation"
+        "annotdb",
+        "annotation",
+        "limit-query-length"
       ],
-      "description": "Extract genomic sequence of the specified region."
+      "description": "Extract genomic sequence."
     },
+    "GeneSeq": {
+      "require": [
+        "_args_",
+        "reference",
+        "annotdb"
+      ],
+      "option": [
+        "output",
+        "outdir",
+        "oformat"
+      ],
+      "description": "Extract gene sequence."
+    },
+    "TranscriptSeq": {
+      "require": [
+        "_args_",
+        "reference",
+        "annotdb"
+      ],
+      "option": [
+        "output",
+        "outdir",
+        "oformat",
+        "base-type",
+        "query-type",
+        "cds-only"
+      ],
+      "description": "Extract transcript sequence."
+    },
+    "GetComplement": {
+      "require": [
+        "_args_"
+      ],
+      "description": "Export complement sequence."
+    },
+    "GetTranslated": {
+      "require": [
+        "_args_"
+      ],
+      "option": [
+        "codon"
+      ],
+      "description": "Export translated sequence."
+    },
+
+    "RefSearch": {
+      "require": [ "reference" ],
+      "select": [ "input", "_args_" ],
+      "option": [
+        "output",
+        "seed-length",
+        "min-match",
+        "max-gap",
+        "max-missmatch",
+        "min-score",
+        "threshold",
+        "exact-match",
+        "thread"
+      ],
+      "description": "Local search."
+    },
+    "VariantSearch": {
+      "require": [
+        "_args_",
+        "reference"
+      ],
+      "option": [
+        "outdir",
+        "oformat",
+        "annotdb",
+        "recall",
+        "alignment",
+        "chromatogram",
+        "hetero-detect"
+      ],
+      "description": "Search variants from Sangar sequence data"
+    },
+    "BioAnnotation": {
+      "require": [
+        "from",
+        "to",
+        "annotdb"
+      ],
+      "select": [
+        "input",
+        "_args_"
+      ],
+      "option": [
+        "output",
+        "feature-type"
+      ],
+      "description": "Annotation for specific sites."
+    },
+
     "countGCRatio": {
       "require": [
         "reference",
@@ -62,70 +256,35 @@
       "description": "Count GC of each bin."
     },
 
-    "refSearch": {
-      "require": [ "reference" ],
-      "select": [ "input", "output", "_args_" ],
-      "description": "Local search."
-    },
-
-    "geneSeq": {
-      "require": [ "_args_", "annotdb", "reference" ],
-      "option": [ "output", "oformat" ],
-      "description": "Extract gene sequence."
-    },
-    "transcriptSeq": {
-      "require": [ "_args_", "annotdb", "reference" ],
-      "option": [ "output", "oformat", "splicing", "cds-only" ],
-      "description": "Extract transcript sequence."
-    },
-    "aaSeq": {
-      "require": [ "_args_", "annotdb", "reference" ],
-      "option": [ "output", "codon", "mt-codon" ],
-      "description": "Get translated sequence."
-    },
-
-    "gffSummary": {
-      "require": [ "_args_" ],
-      "description": "Summary of sources and attribute keys in a GFF file."
-    },
-    "makeAnnotDB": {
+    "GeneMap": {
       "require": [
-        "reference",
-        "gff",
-        "output",
-        "plugin",
-        "attribute"
+        "annotdb"
       ],
       "option": [
-        "source",
-        "dbver",
-        "species"
+        "width",
+        "display",
+        "query-type",
+        "mapping",
+        "output"
       ],
-      "description": "Construct local DB for annotation"
+      "description": "."
     },
-    "bioAnnotation": {
-      "require": [ "from", "to", "annotdb" ],
-      "option": [ "output" ],
-      "select": [ "input", "_args_" ],
-      "description": "Annotation for specific sites"
+    "MotifMap": {
+      "require": [
+        "annotdb"
+      ],
+      "option": [
+        "width",
+        "mapping",
+        "motif-source",
+        "output"
+      ],
+      "description": "."
     },
 
 
-    "makeOrthoDB": {
-      "require": [ "list", "source", "output" ],
-      "option": [ "dbversion" ],
-      "description": "Construct local DB for geneorthology."
-    },
-    "motifSearch": {
-      "require": [ "_args_", "annotdb" ],
-      "option": [ "output" ],
-      "description": ""
-    },
-    "variantSearch": {
-      "require": [ "_args_", "reference" ],
-      "option": [ "output", "annotdb", "recall", "hetero-detect" ],
-      "description": "Search variants from Sangar sequence data"
-    },
+
+
     "variantFilter": {
       "require": [
         "_args_",
@@ -143,27 +302,12 @@
         "cds-only",
         "homo-only",
         "min-qual",
-        "min-freq"
+        "min-freq",
+        "thread"
       ],
       "description": "Filter variants"
-    },
-    "makeDiseaseDB": {
-      "require": [ "list", "source", "output" ],
-      "option": [ "dbversion" ],
-      "description": "Make disease database."
-    },
-    "diseaseRelatedGene": {
-      "require": [ "db", "_args_" ],
-      "option": [ "species", "search-ortho", "output" ],
-      "description": "Search disease related genes."
-    },
-    "templateParam": {
-      "require": [
-        "_args_",
-        "outdir"
-      ],
-      "description": "Export template parameter file(.json)."
     }
+
   },
   "option": {
     "_args_": {
@@ -177,7 +321,7 @@
     },
     "refname": {
       "brief": "name",
-      "description": ""
+      "description": "Name for referecne data."
     },
     "reference": {
       "short": "r",
@@ -185,32 +329,42 @@
       "description": "Path to compressed reference sequence file."
     },
     "annotation": {
+      "brief": "type",
+      "description": "Annotation data type. G: gene, T: transcript, V: variant(mutation), F: feature."
+    },
+    "annotdb": {
       "short": "a",
       "brief": "file(.db)",
-      "description": "Path to database for annotations."
+      "description": "Path to local annotation database."
+    },
+    "db": {
+      "short": "d",
+      "brief": "file(.db)",
+      "description": "Path to local database for inter-species dataset."
     },
     "param": {
       "short": "p",
       "brief": "file",
-      "description": "Parameter file (.json)."
+      "description": "Path to parameter file (.json)."
     },
     "target": {
+      "short": "t",
       "brief": "file",
-      "description": "Target reference region (.bed)."
+      "description": "Path to file describing target region (.bed)."
     },
     "input": {
       "short": "i",
-      "brief": "input(s)",
+      "brief": "input",
       "description": "Input file(s) or directory."
     },
     "output": {
       "short": "o",
-      "brief": "output(s)",
-      "description": "Output file(s)."
+      "brief": "output",
+      "description": "Output file."
     },
     "outdir": {
       "short": "O",
-      "brief": "output directory",
+      "brief": "dir",
       "description": "Output directory."
     },
     "file-name": {
@@ -233,13 +387,13 @@
       "default": false,
       "description": "Option to decompress file."
     },
-    "refver": {
+    "ver": {
       "brief": "version",
-      "description": "Reference version (i.e. GRCh38.XXXX)."
+      "description": "Version of bio-data (i.e. GRCh38)."
     },
     "dbver": {
       "brief": "version",
-      "description": "Database version (i.e. GRCh38.XXXX)."
+      "description": "Annotation dataset version (i.e. GRCh38.XXXX)."
     },
     "source": {
       "brief": "name",
@@ -253,10 +407,6 @@
       "brief": "name",
       "description": "Species name."
     },
-    "plugin": {
-      "brief": "name",
-      "description": "Native plugin (dynamic library)."
-    },
     "supplementary": {
       "brief": "additional",
       "description": "Additional information."
@@ -267,13 +417,8 @@
       "description": "Rename the sequences (i.e. RefSeq genome : accession numbers => common names such as 1,2,3...X,Y)."
     },
     "attribute": {
-      "brief": "info",
-      "description": "Attribute data."
-    },
-
-    "attribute-file": {
-      "brief": "file",
-      "description": "Attribute information."
+      "brief": "args",
+      "description": "Attribute data or file."
     },
     "gff": {
       "brief": "file",
@@ -283,10 +428,14 @@
       "brief": "file",
       "description": "Gene list file."
     },
-    "target-lg": {
+    "lg": {
       "brief": "str",
       "default": "ALL",
       "description": "Target linkage group(s). [CHR: CHRomosomes; M: Mitochondrial genome; PLT: Plastid; PLM: Plasmid; ALL: All seqences (default); IF need to combinate, join by '+(0x)' such as CHR+M meaning CHRomosome and Mitochondria ]"
+    },
+    "taxon": {
+      "brief": "str",
+      "description": "Name or NCBI ID of the target taxon."
     },
     "bin": {
       "brief": "size",
@@ -294,12 +443,30 @@
       "description": "Binning size"
     },
     "from": {
-      "brief": "data-type",
-      "description": ""
+      "brief": "str",
+      "description": "Name or symbol of the source for conversion."
     },
     "to": {
-      "brief": "data-type",
-      "description": ""
+      "brief": "str",
+      "description": "Name or symbol of the destination for conversion."
+    },
+    "base-type": {
+      "brief": "type",
+      "default": "auto",
+      "description": "Base type."
+    },
+    "query": {
+      "short": "q",
+      "brief": "args",
+      "description": "Query words or texts"
+    },
+    "query-type": {
+      "brief": "type",
+      "description": "Query type."
+    },
+    "plugin": {
+      "brief": "name",
+      "description": "Native plugin (dynamic library)."
     },
     "plugin-filter": {
       "brief": "plugin",
@@ -315,19 +482,76 @@
     },
     "cds-only": {
       "type": "bool",
-      "description": "Filter only CDS variant."
+      "default": false,
+      "description": "Target is limited in only CDS region."
+    },
+    "seed-length": {
+      "brief": "value",
+      "description": "Seed length to local search."
+    },
+
+    "min-score": {
+      "brief": "value",
+      "description": "Seed length to local search."
     },
     "homo-only": {
       "type": "bool",
+      "default": false,
       "description": "Filter only homozygous variant."
     },
     "min-qual": {
       "brief": "value",
       "description": "Minimum quality value for filtering."
     },
+    "limit-query-length": {
+      "brief": "value",
+      "description": "Limit of length/size to reduce resource usage."
+    },
+    "recall": {
+      "type": "bool",
+      "default": false,
+      "description": "Reinterpret the BaseCall result in ABI's sequence file (.ab1). If the input file is not ABIF format, this option does not work."
+    },
+    "alignment": {
+      "type": "bool",
+      "default": false,
+      "description": "Perform and/or export the alignment."
+    },
+    "chromatogram": {
+      "type": "bool",
+      "default": false,
+      "description": "Export the raw data of chromatogram."
+    },
+    "codon": {
+      "default": "general",
+      "brief": "type",
+      "description": "Set codon matrix. "
+    },
+    "feature-type": {
+      "brief": "type",
+      "description": "Set feature type to annotate. (ex. promotor, tf, telomere, etc...)"
+    },
+    "motif-source": {
+      "brief": "sources",
+      "description": "Comma separated "
+    },
     "min-freq": {
       "brief": "value",
       "description": "Minimum frequency value for filtering."
+    },
+    "display": {
+      "brief": "value",
+      "default": "auto",
+      "description": "."
+    },
+    "width": {
+      "brief": "value",
+      "default": "auto",
+      "description": "."
+    },
+    "mapping": {
+      "brief": "value",
+      "description": "."
     }
   }
 }

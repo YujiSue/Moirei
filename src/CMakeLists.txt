@@ -1,0 +1,22 @@
+add_executable(moirei 
+	cuimain.cpp
+	moirei.cpp 
+	gconv.cpp 
+	adb.cpp 
+	makedb.cpp
+	annot.cpp
+	genome.cpp
+	refinfo.cpp	
+	ginfo.cpp
+	vinfo.cpp
+	info.cpp
+	disgene.cpp
+	seq.cpp
+	search.cpp
+	refseq.cpp
+	genseq.cpp
+	trsseq.cpp
+	gmap.cpp
+	mmap.cpp
+	variant.cpp)
+install(TARGETS moirei)

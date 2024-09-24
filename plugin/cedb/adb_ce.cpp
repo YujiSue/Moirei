@@ -1,8 +1,12 @@
 #include "../../moirei.h"
-
+///////////////////////////////////////////// slib namespace ////////////////////////////////////////////
 using namespace slib;
+using namespace slib::sutil;
 using namespace slib::sbio;
+using namespace slib::sbio::sutil;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////// Data containes ////////////////////////////////////////////
 sindex chrindex;
 Array<AnnotInfo> contigs;
 Array<GeneInfo> genes;
@@ -16,34 +20,51 @@ Array<AnnotInfo> proteins;
 Map<String, int> protIndex;
 Array<MotifInfo> motifs;
 Map<int, Array<Pair<String, String>>> crossRef[3];
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////// Map to classify ///////////////////////////////////////////
 sindex ce_transcript_type = {
-    S_i("mRNA", (int)TRANSCRIPT_TYPE::M_RNA),
-    S_i("tRNA", (int)TRANSCRIPT_TYPE::T_RNA),
-    S_i("rRNA", (int)TRANSCRIPT_TYPE::R_RNA),
-    S_i("ncRNA", (int)TRANSCRIPT_TYPE::NC_RNA),
-    S_i("circular_ncRNA", (int)TRANSCRIPT_TYPE::CIRC_NC_RNA),
-    S_i("nc_primary_transcript", (int)TRANSCRIPT_TYPE::NC_RNA),
-    S_i("lincRNA", (int)TRANSCRIPT_TYPE::LINC_RNA),
-    S_i("miRNA_primary_transcript", (int)TRANSCRIPT_TYPE::NC_RNA),
-    S_i("pre_miRNA", (int)TRANSCRIPT_TYPE::NC_RNA),
-    S_i("miRNA", (int)TRANSCRIPT_TYPE::MI_RNA),
-    S_i("antisense_RNA", (int)TRANSCRIPT_TYPE::AS_RNA),
-    S_i("piRNA", (int)TRANSCRIPT_TYPE::PI_RNA),
-    S_i("snRNA", (int)TRANSCRIPT_TYPE::SN_RNA),
-    S_i("snoRNA", (int)TRANSCRIPT_TYPE::SNO_RNA),
-    S_i("scRNA", (int)TRANSCRIPT_TYPE::SC_RNA),
-    S_i("pseudogenic_transcript", (int)TRANSCRIPT_TYPE::NC_RNA),
-    S_i("pseudogenic_tRNA", (int)TRANSCRIPT_TYPE::NC_RNA),
-    S_i("pseudogenic_rRNA", (int)TRANSCRIPT_TYPE::NC_RNA)
+    SI_("mRNA", (int)TRANSCRIPT_TYPE::M_RNA),
+    SI_("tRNA", (int)TRANSCRIPT_TYPE::T_RNA),
+    SI_("rRNA", (int)TRANSCRIPT_TYPE::R_RNA),
+    SI_("ncRNA", (int)TRANSCRIPT_TYPE::NC_RNA),
+    SI_("circular_ncRNA", (int)TRANSCRIPT_TYPE::CIRC_NC_RNA),
+    SI_("nc_primary_transcript", (int)TRANSCRIPT_TYPE::NC_RNA),
+    SI_("lincRNA", (int)TRANSCRIPT_TYPE::LINC_RNA),
+    SI_("miRNA_primary_transcript", (int)TRANSCRIPT_TYPE::NC_RNA),
+    SI_("pre_miRNA", (int)TRANSCRIPT_TYPE::NC_RNA),
+    SI_("miRNA", (int)TRANSCRIPT_TYPE::MI_RNA),
+    SI_("antisense_RNA", (int)TRANSCRIPT_TYPE::AS_RNA),
+    SI_("piRNA", (int)TRANSCRIPT_TYPE::PI_RNA),
+    SI_("snRNA", (int)TRANSCRIPT_TYPE::SN_RNA),
+    SI_("snoRNA", (int)TRANSCRIPT_TYPE::SNO_RNA),
+    SI_("scRNA", (int)TRANSCRIPT_TYPE::SC_RNA),
+    SI_("pseudogenic_transcript", (int)TRANSCRIPT_TYPE::NC_RNA),
+    SI_("pseudogenic_tRNA", (int)TRANSCRIPT_TYPE::NC_RNA),
+    SI_("pseudogenic_rRNA", (int)TRANSCRIPT_TYPE::NC_RNA)
 };
 sindex ce_struct_type = {
-    S_i("CDS", sbio::CDS),
-    S_i("five_prime_UTR", sbio::UTR5),
-    S_i("three_prime_UTR", sbio::UTR3),
-    S_i("exon", sbio::EXON)
+    SI_("CDS", sbio::CDS),
+    SI_("five_prime_UTR", sbio::UTR5),
+    SI_("three_prime_UTR", sbio::UTR3),
+    SI_("exon", sbio::EXON)
 };
-//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////// Func. to show progress ///////////////////////////////////////
+inline void _showProgress(GffFile* gff, bool* run) {
+    while (!gff->eof() && (*run)) {
+        SWrite(slib::DEL * 4, sstr::lfill(S((int)(100 * gff->offset() / gff->size())), ' ', 3), "%");
+        sleep(1000);
+    }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/*****************************************************/
+/*  Unique function to process each species dataset  */
+/*****************************************************/
+
 inline void makeGeneIndex(const char* path) {
     SFile f(path);
     SString txt;
@@ -146,18 +167,18 @@ inline void _addTranscriptData(GffData* data) {
     trsIndex[tinfo.name] = transcripts.size() - 1;
     //
     if (tinfo.type == (int)TRANSCRIPT_TYPE::M_RNA && data->attribute.hasKey("wormpep")) {
-        proteins.add();
-        auto& proInfo = proteins[-1];
-        // Set index as transcript record index
-        proInfo.idx = transcripts.size();
-        proInfo.name = data->attribute["wormpep"];
-        proInfo.begin = 1;
-        proInfo.end = -1;
-        if (data->attribute.hasKey("uniprot_id"))
-            crossRef[2][proteins.size()].add("uniprot", data->attribute["uniprot_id"]);
-        auto tnames = tinfo.name.split(".");
-        if (tnames[-1].match(REG("/\\d+/"))) tnames.resize(tnames.size() - 1);
-        protIndex[toString(tnames, ".")] = proteins.size();
+        if (!protIndex.hasKey(data->attribute["wormpep"])) {
+            proteins.add();
+            auto& proInfo = proteins[-1];
+            // Set index as transcript record index
+            proInfo.idx = tinfo.idx;
+            proInfo.name = data->attribute["wormpep"];
+            proInfo.begin = 1;
+            proInfo.end = -1;
+            if (data->attribute.hasKey("uniprot_id"))
+                crossRef[2][proteins.size()].add("uniprot", data->attribute["uniprot_id"]);
+            protIndex[data->attribute["wormpep"]] = proteins.size();
+        }
     }
 }
 inline void _addStructData(GffData* data) {
@@ -217,9 +238,9 @@ inline void _setVarConseq(VariantInfo* info, sattribute& attr) {
     }
     else if (conseq.match("stop")) {
         if (type == DELETION) info->type |= ((TAIL_LESION << 16) | ((CDS | UTR3) << 8));
-        else info->type |= ((MISSENSE << 16) | (CDS << 8));
+        else info->type |= ((NONSENSE << 16) | (CDS << 8));
     }
-    else if (conseq.match("synonymous")) info->type |= ((NONSENSE << 16) | (CDS << 8));
+    else if (conseq.match("synonymous")) info->type |= ((SYNONYMOUS << 16) | (CDS << 8));
     else if (conseq.match("exon_variant")) {
         if (type == SNV || type == MNV) info->type |= (SUBSTITUTION << 16); else info->type |= (INDEL << 16);
         info->type |= (EXON << 8);
@@ -264,17 +285,20 @@ inline void _setVarData(VariantInfo *info, GffData* data) {
     _setGffData(info, data);
     info->name = data->attribute["public_name"];
     info->varid = data->attribute["variation"];
+    info->attribute["source"] = data->source;
     _setVarType(info, data);
     _setVarConseq(info, data->attribute);
     _setVarAttr(info, data->attribute);
 }
 inline void _addMutData(GffData* data) {
+    if (mutIndex.hasKey(data->attribute["public_name"])) return;
     mutations.add();
     auto& minfo = mutations[-1];
     _setVarData(&minfo, data);
     mutIndex[minfo.name] = mutations.size() - 1;
 }
 inline void _addVarData(GffData* data) {
+    if (varIndex.hasKey(data->attribute["variation"])) return;
     variants.add();
     auto& vinfo = variants[-1];
     _setVarData(&vinfo, data);    
@@ -286,13 +310,6 @@ inline void _addFtrData(GffData* data, suint t, const char *s) {
     _setGffData(&finfo, data);
     finfo.type = t;
     finfo.name = s;
-}
-
-inline void _showProgress(GffFile* gff, bool *run) {
-    while (!gff->eof() && (*run)) {
-        SWrite(slib::DEL * 4, sstr::lfill(S((int)(100 * gff->offset() / gff->size())), ' ', 3), "%");
-        sleep(1000);
-    }
 }
 inline void loadGFF(const char* path) {
     SPrint("Loading gff3 data.");
@@ -387,16 +404,18 @@ inline void addNBPMutant(const char* path) {
         else {
             mutations.add();
             info = &mutations[-1];
+            info->varid = dat[0];
         }
         info->name = dat[0];
         info->idx = chrindex[dat[1]];
         info->begin = dat[2].intValue();
         info->end = dat[3].intValue();
+        info->attribute["source"] = "NBRP_Ce";
         info->attribute["alt"] = dat[4];
-        //info->type = dat[5].uintValue();
+        info->type = DELETION;
     }
 }
-inline void addTMBalacer(const char *path) {
+inline void addTMBalancer(const char *path) {
     SFile f(path);
     String ln;
     while (f) {
@@ -435,18 +454,27 @@ inline void addMotifs(const char* path) {
         motif.program = dat[3];
     }
 }
+/*****************************************************/
+
+///////////////////////////////////////////// Main functtion ////////////////////////////////////////////
 extern "C" {
     splugin makeDB(SDataBase& db, const SDictionary& pref, const SeqList& reference) {
         try {
             chrindex = reference.nameIndex();
-            makeGeneIndex(pref["gene-list"]);
+            auto attributes = pref["attribute"].parse(";", "=");
+
+            /**************************************************************/
+            /*  Unique codes to process each species-specific data set    */
+            /**************************************************************/
+            makeGeneIndex(attributes["genelist"]);
             //
-            auto suppl = pref.hasKey("supplementary") ? pref["supplementary"].parse(";", "=") : sattribute();
-            if (suppl.hasKey("description")) addDescription(suppl["description"]);
-            if (suppl.hasKey("xgenes")) setXrefGenes(suppl["xgenes"]);
+            if (attributes.hasKey("description")) addDescription(attributes["description"]);
+            if (attributes.hasKey("xgenes")) setXrefGenes(attributes["xgenes"]);
             //
             loadGFF(pref["gff"]);
+            /*************************************************************/
 
+            ////////// Append records to SQLite DB //////////
             // Make contig table
             {
                 SPrint("Write out contig data.");
@@ -498,11 +526,11 @@ extern "C" {
             // Make mutation table
             {
                 SPrint("Write out mutation data.");
-                if (suppl.hasKey("tm")) addNBPMutant(suppl["tm"]);
+                if (attributes.hasKey("tm")) addNBPMutant(attributes["tm"]);
                 auto muttbl = db["mutation"];
                 muttbl.prepare().insert();
                 sfor(mutations) {
-                    muttbl.addRecord({ $_.name, $_.type, $_.idx, $_.begin, $_.end,
+                    muttbl.addRecord({ snull, $_.name, $_.type, $_.idx, $_.begin, $_.end,
                         $_.varid, sjson::toString($_.attribute) });
                 }
                 muttbl.complete();
@@ -513,7 +541,7 @@ extern "C" {
                 auto vartbl = db["variant"];
                 vartbl.prepare().insert();
                 sfor(variants) {
-                    vartbl.addRecord({ $_.name, $_.type, $_.idx, $_.begin, $_.end, 
+                    vartbl.addRecord({ snull, $_.name, $_.type, $_.idx, $_.begin, $_.end,
                         $_.varid, sjson::toString($_.attribute) });
                 }
                 vartbl.complete();
@@ -521,7 +549,7 @@ extern "C" {
             // Make feature table
             {
                 SPrint("Write out feature data.");
-                if (suppl.hasKey("balancer")) addTMBalacer(suppl["balancer"]);
+                if (attributes.hasKey("balancer")) addTMBalancer(attributes["balancer"]);
                 auto ftrtbl = db["feature"];
                 ftrtbl.prepare().insert();
                 sfor(features) {
@@ -544,7 +572,7 @@ extern "C" {
             // Make motif table
             {
                 SPrint("Write out motif data.");
-                if (suppl.hasKey("motif")) addMotifs(suppl["motif"]);
+                if (attributes.hasKey("motif")) addMotifs(attributes["motif"]);
                 auto mottbl = db["motif"];
                 mottbl.prepare().insert();
                 sfor(motifs) {
@@ -567,6 +595,7 @@ extern "C" {
                 }
                 xreftbl.complete();
             }
+            /////////////////////////////////////////////////
             return 0;
         }
         catch (Exception ex) { 
@@ -575,3 +604,4 @@ extern "C" {
         }
 	}
 }
+////////////////////////////////////////////////// End //////////////////////////////////////////////////
