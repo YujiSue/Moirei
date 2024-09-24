@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(moirei)
 include(ExternalProject)
-option(INSTALL_SLIB "install slib" ON) 
+option(INSTALL_SLIB "install slib" OFF) 
 option(BUILD_SLIB "only build slib" OFF) 
 if(MSVC)
 	add_compile_definitions(_USE_DLL)
