@@ -29,19 +29,20 @@ elseif(UNIX)
 		message(STATUS "Error: Three libraries <libsobj, libsbioinfo, libsapp> are required.")
 		ExternalProject_Add(
 			slib
-			PREFIX ${CMAKE_BINARY_DIR}/ext
+			PREFIX ${CMAKE_SOURCE_DIR}
 			GIT_REPOSITORY https://github.com/YujiSue/slib.git
 			GIT_TAG master
-    			CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/ext -DBUILD_BIOINFO_LIB=ON -DBUILD_SAPP_LIB=ON 
+    			CMAKE_ARGS -DBUILD_ONLY=ON -DBUILD_BIOINFO_LIB=ON -DBUILD_SAPP_LIB=ON 
     			UPDATE_DISCONNECTED 1
 		)
 		ExternalProject_Get_Property(slib install_dir)
-		include_directories(${install_dir}/include)
-		link_directories(${install_dir}/lib)	
+		message(STATUS "slib install : ${install_dir}")
+		include_directories(${install_dir}/src/slib/include)
+		link_directories(${install_dir}/src/slib-build/lib)	
 	endif()
 	message(STATUS "Install to ${CMAKE_INSTALL_PREFIX}")
 	set(CMAKE_CXX_FLAGS "-std=c++11 -O2")
-	link_libraries(sobj sbioinfo sapp dl)
+	link_libraries(sobj sbioinfo sapp dl curl)
 endif()
 include_directories(${PROJECT_SOURCE_DIR}/src $ENV{SLIB_INCLUDE})
 link_directories($ENV{SLIB_DIR})
