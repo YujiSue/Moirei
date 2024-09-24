@@ -25,7 +25,7 @@ elseif(UNIX)
 	find_library(LSAPP_INSTALLED NAMES sapp)
 	if (LSOBJ_INSTALLED AND LSBI_INSTALLED AND LSAPP_INSTALLED)
 		message(STATUS "slib found.")
-	elseif (BUILD_SLIB)
+	elseif (INSTALL_SLIB)
 		message(STATUS "Error: Three libraries <libsobj, libsbioinfo, libsapp> are required.")
 		ExternalProject_Add(
 			slib
@@ -35,7 +35,7 @@ elseif(UNIX)
     			CMAKE_ARGS -DBUILD_SHARED_LIBS=ON -DBUILD_BIOINFO_LIB=ON -DBUILD_SAPP_LIB=ON 
     			UPDATE_DISCONNECTED 1
 		)
-	elseif (INSTALL_SLIB)
+	elseif (BUILD_SLIB)
 		message(STATUS "Error: Three libraries <libsobj, libsbioinfo, libsapp> are required.")
 		ExternalProject_Add(
 			slib
