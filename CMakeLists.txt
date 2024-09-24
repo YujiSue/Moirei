@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(moirei)
 include(ExternalProject)
+option(INSTALL_SLIB "install slib" ON) 
+option(BUILD_SLIB "only build slib" OFF) 
 if(MSVC)
 	add_compile_definitions(_USE_DLL)
 	set(CMAKE_CXX_FLAGS "/utf-8")
@@ -9,14 +11,12 @@ elseif(UNIX)
 	if (DEFINED ENV{SLIB_INCLUDE})
 		message(STATUS "SLIB_INCLUDE=$ENV{SLIB_INCLUDE}")
 	else()
-		#message(STATUS "SLIB_INCLUDE not defined.")
 		set(ENV{SLIB_INCLUDE} ${CMAKE_INSTALL_PREFIX}/include/slib)
 		message(STATUS "SLIB_INCLUDE=$ENV{SLIB_INCLUDE}")
 	endif()
 	if (DEFINED ENV{SLIB_DIR})
 		message(STATUS "SLIB_DIR=$ENV{SLIB_DIR}")
 	else()
-		#message(STATUS "SLIB_DIR not defined.")
 		set(ENV{SLIB_DIR} ${CMAKE_INSTALL_PREFIX}/lib)
 		message(STATUS "SLIB_DIR=$ENV{SLIB_DIR}")		
 	endif()
@@ -25,14 +25,24 @@ elseif(UNIX)
 	find_library(LSAPP_INSTALLED NAMES sapp)
 	if (LSOBJ_INSTALLED AND LSBI_INSTALLED AND LSAPP_INSTALLED)
 		message(STATUS "slib found.")
-	else()
+	elseif (BUILD_SLIB)
+		message(STATUS "Error: Three libraries <libsobj, libsbioinfo, libsapp> are required.")
+		ExternalProject_Add(
+			slib
+			PREFIX ${CMAKE_BINARY_DIR}
+			GIT_REPOSITORY https://github.com/YujiSue/slib.git
+			GIT_TAG master
+    			CMAKE_ARGS -DBUILD_SHARED_LIBS=ON -DBUILD_BIOINFO_LIB=ON -DBUILD_SAPP_LIB=ON 
+    			UPDATE_DISCONNECTED 1
+		)
+	elseif (INSTALL_SLIB)
 		message(STATUS "Error: Three libraries <libsobj, libsbioinfo, libsapp> are required.")
 		ExternalProject_Add(
 			slib
 			PREFIX ${CMAKE_SOURCE_DIR}
 			GIT_REPOSITORY https://github.com/YujiSue/slib.git
 			GIT_TAG master
-    			CMAKE_ARGS -DBUILD_ONLY=ON -DBUILD_BIOINFO_LIB=ON -DBUILD_SAPP_LIB=ON 
+    			CMAKE_ARGS -DBUILD_ONLY=ON -DBUILD_SHARED_LIBS=ON -DBUILD_BIOINFO_LIB=ON -DBUILD_SAPP_LIB=ON 
     			UPDATE_DISCONNECTED 1
 		)
 		ExternalProject_Get_Property(slib install_dir)
@@ -42,7 +52,7 @@ elseif(UNIX)
 	endif()
 	message(STATUS "Install to ${CMAKE_INSTALL_PREFIX}")
 	set(CMAKE_CXX_FLAGS "-std=c++11 -O2")
-	link_libraries(sobj sbioinfo sapp dl curl)
+	link_libraries(sobj sbioinfo sapp dl pthread curl)
 endif()
 include_directories(${PROJECT_SOURCE_DIR}/src $ENV{SLIB_INCLUDE})
 link_directories($ENV{SLIB_DIR})
