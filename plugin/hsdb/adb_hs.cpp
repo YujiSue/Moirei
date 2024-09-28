@@ -1,4 +1,4 @@
-#include "../../moirei.h"
+#include "../src/moirei.h"
 ///////////////////////////////////////////// slib namespace ////////////////////////////////////////////
 using namespace slib;
 using namespace slib::sutil;

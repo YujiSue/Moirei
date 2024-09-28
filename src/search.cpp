@@ -18,7 +18,6 @@ Response& Moirei::refSearch(const SDictionary& pref) {
 		//
 		SeqList reference;
 		reference.load(pref["reference"]);
-		auto refnum = reference.size();
 		//
 		SeqSearch searcher(&par);
 		DNASeqTrie2 trie(&par);
@@ -50,25 +49,19 @@ Response& Moirei::refSearch(const SDictionary& pref) {
 		trie.complete();
 		searcher.search(reference, trie);
 		//
-		Array<Array<AlignPair*>> results(trie.qcount() / 2);
+		Array<Array<AlignPair*>> results(searcher.aligns.row);
+		auto* aligns = searcher.aligns.data();
 		//
 		String alignedseq[3];
 		//
-		sfori(results) {
-			//param.ostream.print("> Query #", (i + 1));
-			// Sort by score
-			sforin(j, 0, 2) {
-				auto row = searcher.aligns[2 * i + j];
-				sforin(r, 0, refnum) {
-					sforeach(align, row[r]) {
-						if ((exact_match &&
-							align.cigars[0].option == scigar::PMATCH &&
-							align.cigars[0].length == trie.queries[i].size()) ||
-							(!exact_match && par.min_score <= align.score)) results[i].add(&align);
-					}
-				}
+		sforeach(result, results) {
+			sforin(r, 0, reference.size()) {
+				sforeach(align, *aligns) result.add(&align);
+				++aligns;
 			}
-			results[i].sort([](const AlignPair* a1, const AlignPair* a2) {
+		}
+		sforeach(result, results) {
+			result.sort([](const AlignPair* a1, const AlignPair* a2) {
 				if (a1->score == a2->score) return a1->ref < a2->ref;
 				else return a2->score < a1->score;
 				});
@@ -113,8 +106,7 @@ Response& Moirei::refSearch(const SDictionary& pref) {
 				param.ostream.setFileOStream(param.ofile);
 			}
 			//
-			auto qnum = trie.qcount() / 2;
-			sforin(q, 0, qnum) {
+			sforin(q, 0, results.size()) {
 				param.ostream.print("> Query #", (q + 1));
 				// Sort by score
 				Array<AlignPair*>& result = results[q];
@@ -139,7 +131,7 @@ Response& Moirei::refSearch(const SDictionary& pref) {
 					param.ostream.print(sstr::lfill(S(align.query.begin + 1), ' ', 16), SP, alignedseq[2], SP, S(align.query.end + 1));
 					param.ostream.print(NL);
 				}
-				if (q < qnum - 1) param.ostream.print(S("-") * 60);
+				if (q < results.size() - 1) param.ostream.print(S("-") * 60);
 			}
 			if (param.response.output.size()) SPrint(param.response.output);
 		}

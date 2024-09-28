@@ -147,6 +147,7 @@
         "oformat",
         "annotdb",
         "annotation",
+        "complement",
         "limit-query-length"
       ],
       "description": "Extract genomic sequence."
@@ -455,6 +456,10 @@
       "default": "auto",
       "description": "Base type."
     },
+    "complement": {
+      "type": "bool",
+      "description": "Complement sequence flag."
+    },
     "query": {
       "short": "q",
       "brief": "args",
@@ -551,6 +556,10 @@
     },
     "mapping": {
       "brief": "value",
+      "description": "."
+    },
+    "thread": {
+      "brief": "num",
       "description": "."
     }
   }

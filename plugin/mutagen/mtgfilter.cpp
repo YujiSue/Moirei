@@ -1,4 +1,4 @@
-#include "../../moirei.h"
+#include "../../src/moirei.h"
 
 #if defined(WIN_OS) and defined(_WINDLL)
 slib::String slib::NL = "\r\n";
