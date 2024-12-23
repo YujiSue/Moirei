@@ -13,11 +13,13 @@ Response& Moirei::geneSeq(const SDictionary& pref) {
 		if (pref.hasKey("annotation") && pref["annotation"].size()) {
 			if (pref["verbose"]) SPrint("Connect annotation database.");
 			if (!pref.hasKey("annotdb")) throw InsufficientArgsException(insufficientArgsErrTxt("annotdb"));
-			db.open(pref["annotdb"]);
 			//
 			auto str = sstr::toUpper(pref["annotation"]);
 			sforeach(c, str) {
 				switch (c) {
+				case 'G':
+					atypes |= (sushort)ANNOT_CATEGORY::GENE;
+					break;
 				case 'T':
 					atypes |= (sushort)ANNOT_CATEGORY::TRANSCRIPT;
 					break;
@@ -32,6 +34,7 @@ Response& Moirei::geneSeq(const SDictionary& pref) {
 				}
 			}
 		}
+		db.open(pref["annotdb"]);
 		sfor(pref["_args_"]) {
 			if (pref["verbose"]) SPrint("Search gene(s) '", $_, "'.");
 			//

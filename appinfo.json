@@ -438,6 +438,10 @@
       "brief": "str",
       "description": "Name or NCBI ID of the target taxon."
     },
+    "transcript": {
+      "type": "boolean",
+      "description": "Include transcript information."
+    },
     "bin": {
       "brief": "size",
       "type": "int",

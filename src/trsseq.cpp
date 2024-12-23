@@ -27,7 +27,6 @@ Response& Moirei::transcriptSeq(const SDictionary& pref) {
 		if (pref.hasKey("annotation") && pref["annotation"].size()) {
 			if (pref["verbose"]) SPrint("Connect annotation database.");
 			if (!pref.hasKey("annotdb")) throw InsufficientArgsException(insufficientArgsErrTxt("annotdb"));
-			db.open(pref["annotdb"]);
 			//
 			auto str = sstr::toUpper(pref["annotation"]);
 			sforeach(c, str) {
@@ -47,9 +46,10 @@ Response& Moirei::transcriptSeq(const SDictionary& pref) {
 			}
 		}
 		//
-		bool rna = pref["base-type"] == "rna" || pref["base-type"] == "auto";
-		bool gene = pref["query-type"] == "gene";
-		bool cds = pref["cds-only"];
+		db.open(pref["annotdb"]);
+		bool rna = pref.hasKey("base-type") ? (pref["base-type"] == "rna") : false;
+		bool gene = pref.hasKey("query-type")? (pref["query-type"] == "gene") : false;
+		bool cds = pref.hasKey("cds-only") ? (bool)pref["cds-only"] : false;
 		//
 		sfor(pref["_args_"]) {
 			if (gene) {

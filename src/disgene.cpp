@@ -25,7 +25,7 @@ Response& Moirei::diseaseRelated(const SDictionary& pref) {
 		taxid = taxtbl.nrow() ? taxtbl[0][0].intValue() : -1;
 		if (taxid < 0) throw NotFoundException(nofoundErrorText(pref["taxon"], "Either human, rat, mouse, trog, afrog, zebrafish, fly, worm, or yeast"));
 		//
-		bool orthosearch = pref["search-ortholog"];
+		bool orthosearch = pref.hasKey("search-ortholog") ? (bool)pref["search-ortholog"] : false;
 		//
 		sobj result = SDictionary();
 		String cond;

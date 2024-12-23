@@ -17,6 +17,7 @@ Response& Moirei::genomeSeq(const SDictionary& pref) {
 			if (len < range.begin || range.end < len) throw RangeException(outRangeErrorText("Sequence length", len, range.begin, range.end));
 		}
 		if (sites.empty() || climit < sites.size()) throw RangeException(outRangeErrorText("Query count", sites.size(), 1, climit));
+
 		SeqList seqs;
 		seqs.resize(sites.size());
 		// Reference
@@ -54,8 +55,11 @@ Response& Moirei::genomeSeq(const SDictionary& pref) {
 			}
 		}
 		if (pref["verbose"]) SPrint("Annotation flag : ", (int)atypes);
+
+
 		// Extraction
 		sfor2(sites, seqs) {
+			if ($_1.idx == -1) continue;
 			if (pref["verbose"]) SPrint("Get sequence for '", $_1.toString(reference), "'.");
 			if (atypes) db.annotate(reference[$_1.idx], $_1, atypes);
 			$_2 = reference.subsequence($_1);

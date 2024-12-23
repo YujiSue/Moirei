@@ -3,7 +3,11 @@ Response& Moirei::geneInfo(const SDictionary& pref) {
 	try {
 		AnnotDB adb;
 		adb.open(pref["annotdb"]);
-		auto& genes = adb.getGenes(pref["_args_"][0]);
+		auto& genes = adb.getGenes(pref["_args_"][0], MATCH::EXACT, {
+			D_("synonym", true),
+			D_("xref",  true),
+			D_("transcript", pref.hasKey("transcript") ? true : false)
+			});
 		if (pref["oformat"] == "_obj_") {
 			sobj objs = SArray();
 			sforeach(gene, genes) {

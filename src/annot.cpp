@@ -35,9 +35,12 @@ void setPos(SArray& array, sbpos& pos, AnnotDB& adb, const SDictionary& pref) {
 	array.add(pos.toString(adb.chromosomes));
 }
 void setGene(SArray& array, sbpos& pos, AnnotDB& adb, const SDictionary& pref) {
-	sobj opt = { D_("search-synonym", true), D_("search-xref", true), D_("search-description", true) };
-	if (pref.hasKey("export-geneid") && pref["export-geneid"]) opt["select"] = "gid";
-	else opt["select"] = "name";
+	sobj opt = { D_("synonym", true), D_("xref", true), D_("transcript", true) };
+	
+	if (pref.hasKey("export-geneid") && pref["export-geneid"]) opt["select"] = "id,gid";
+	else opt["select"] = "id,name";
+
+
 	auto& genes = adb.getGenes(pos, opt);
 	sfor(genes) array.add($_.name);
 }
@@ -105,10 +108,12 @@ Response& Moirei::bioAnnot(const SDictionary& pref) {
 			SFunction<void, Array<sbpos>&, String, AnnotDB&, const SDictionary&> importer;
 			SFunction<void, SArray&, sbpos&, AnnotDB&, const SDictionary&> exporter;
 			if (pref["from"] == "pos") importer = getPos;
+			//else if (pref["from"] == "ctg") importer = getPosFromCtg;
 			else if (pref["from"] == "gene") importer = getPosFromGene;
 			else if (pref["from"] == "transcript") importer = getPosFromTranscript;
 			else if (pref["from"] == "variant" || pref["from"] == "mutation") importer = getPosFromVariant;
 			if (pref["to"] == "pos") exporter = setPos;
+			//else if (pref["to"] == "ctg") exporter = setContig;
 			else if (pref["to"] == "gene") exporter = setGene;
 			else if (pref["to"] == "transcript") exporter = setTranscript;
 			else if (pref["to"] == "variant") exporter = setVariant;
@@ -118,6 +123,7 @@ Response& Moirei::bioAnnot(const SDictionary& pref) {
 				importer(target, $_, adb, pref);
 				result.add({ D_("query", $_), D_("out", SArray()) });
 				sforeach(pos, target) {
+					if (pos.idx == -1) continue;
 					exporter(result[-1]["out"].array(), pos, adb, pref);
 				}
 			}
