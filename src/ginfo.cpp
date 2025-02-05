@@ -56,7 +56,7 @@ Response& Moirei::geneInfo(const SDictionary& pref) {
 					param.ostream.print(sstr::rfill("Symbol:", ' ', 15), gene.name);
 					param.ostream.print(sstr::rfill("Synonyms:", ' ', 15), toString(gene.synonym));
 					param.ostream.print(sstr::rfill("Type:", ' ', 15), sbio::sutil::geneType(gene.type));
-					param.ostream.print(sstr::rfill("Position:", ' ', 15), adb.chromosomes[gene.idx].name, ":", gene.begin, "-", gene.end);
+					param.ostream.print(sstr::rfill("Position:", ' ', 15), adb.chromosomes[gene.idx].name, ":", gene.begin, "-", gene.end, " (", (gene.dir?"-":"+"), ")");
 					param.ostream.print(stxt::wrap(gene.description, 90, 15).replace(0, 12, "Description:"));
 					param.ostream.print("Attribute:");
 					param.ostream.print(SP * 15, S("-") * 63);
