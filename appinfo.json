@@ -439,7 +439,7 @@
       "description": "Name or NCBI ID of the target taxon."
     },
     "transcript": {
-      "type": "boolean",
+      "type": "bool",
       "description": "Include transcript information."
     },
     "bin": {
