@@ -141,7 +141,7 @@ inline void _addGeneData(GffData* data) {
         auto& type = data->attribute["biotype"];
         if (type.beginWith("protein")) info->type = (int)GENE_TYPE::PROTEIN_CODING;
         else if (type.beginWith("pseudo")) info->type = (int)GENE_TYPE::PSEUDO_GENE;
-        else info->type = (int)GENE_TYPE::NON_CODING;
+        else if (info->type == (int)GENE_TYPE::MISC) info->type = (int)GENE_TYPE::NON_CODING;
     }
 }
 inline void _addTranscriptData(GffData* data) {
@@ -163,6 +163,11 @@ inline void _addTranscriptData(GffData* data) {
     if (ce_transcript_type.hasKey(data->type))
         tinfo.type = ce_transcript_type[data->type];
     else tinfo.type = (int)TRANSCRIPT_TYPE::MISC_RNA;
+    if (info.gene && info.gene.type == (int)GENE_TYPE::NON_CODING) {
+       if (tinfo.type == (int)TRANSCRIPT_TYPE::T_RNA) info.gene.type = (int)GENE_TYPE::TRNA_CODING;
+       else if (tinfo.type == (int)TRANSCRIPT_TYPE::R_RNA) info.gene.type = (int)GENE_TYPE::RRNA_CODING;
+       else if (tinfo.type == (int)TRANSCRIPT_TYPE::PI_RNA) info.gene.type = (int)GENE_TYPE::OTHERS;
+    }
     tinfo.name = data->attribute["Name"];
     trsIndex[tinfo.name] = transcripts.size() - 1;
     //

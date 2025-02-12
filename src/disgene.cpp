@@ -211,14 +211,29 @@ Response& Moirei::diseaseInfo(const SDictionary& pref) {
 Response& Moirei::relatedDisease(const SDictionary& pref) {
 	try {
 		param.setPref(pref);
-		//
-		AnnotDB adb;
-
-
-
-
+		// Open DB
 		SDataBase db;
 		db.open(pref["db"]);
+		
+		// query => gene
+		SDictionary gids;
+		auto orthotbl = db["ortholog"];
+		orthotbl.where(sdb::textQuery("gid1", pref["_args_"][0]), "or", sdb::textQuery("gene1", pref["_args_"][0], MATCH::PARTIAL))
+				.select({"gid1", "taxon1"});
+		sfor(orthotbl) gids[$_[0]] = $_[1];
+		orthotbl.reset();
+		orthotbl.where(sdb::textQuery("gid2", pref["_args_"][0]), "or", sdb::textQuery("gene2", pref["_args_"][0], MATCH::PARTIAL))
+				.select({"gid2", "taxon2"});
+		sfor(orthotbl) gids[$_[0]] = $_[1];
+
+		// gene => disease
+		String cond;
+		
+		auto distbl = db["disease"];
+		distbl
+			.where(cond)
+			.select({ "id", "name" });
+
 		int taxid;
 		auto taxtbl = db["taxon"];
 		taxtbl
@@ -227,13 +242,12 @@ Response& Moirei::relatedDisease(const SDictionary& pref) {
 		taxid = taxtbl.nrow() ? taxtbl[0][0].intValue() : -1;
 		if (taxid < 0) throw NotFoundException(nofoundErrorText(pref["taxon"], "Either human, rat, mouse, trog, afrog, zebrafish, fly, worm, or yeast"));
 		//
-		bool orthosearch = pref["search-ortholog"];
+		bool orthosearch = pref.hasKey("search-ortholog") ? (bool)pref["search-ortholog"] : false;
 		//
 		sobj result = SDictionary();
-		String cond;
 		sfor(pref["_args_"]) cond << "name like '%" << $_.toString() << "%' AND ";
 		if (cond.size()) cond.resize(cond.size() - 5);
-		auto distbl = db["disease"];
+		
 		distbl
 			.where(cond)
 			.select({ "id", "name" });
